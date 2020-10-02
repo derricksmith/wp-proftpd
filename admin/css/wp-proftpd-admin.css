@@ -1,0 +1,23 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+ 
+fieldset {
+	margin-bottom:10px !important;
+}
+ 
+input[type="text"] {
+	min-height:38px;
+}
+ 
+.max-instances{
+  width: 45px;
+}
+
+.button-counter{
+	margin-top: -5px;
+}
+
+
+
