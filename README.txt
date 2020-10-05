@@ -64,7 +64,7 @@ WP ProFTPd helps Authenticate ProFTPd users to FTP, SFTP, FTPS sites using the W
 12. sudo mkdir -p /etc/proftpd/ssl
 13. sudo mkdir -p /var/log/proftpd
 14. Create file 'proftpd' using your favorite editor, copy script below
-```
+`
 #!/bin/sh
 
 # ProFTPD files
@@ -131,9 +131,9 @@ case $1 in
 esac
 
 exit 0
-```
+`
 15. Edit file '/etc/proftpd/proftpd.conf' using your favorite editor (FTP Type can be "ftp","ftps","sftp" depending on the virtualhost configuration) 
-```
+`
 <Global>
 <IfModule mod_sql.c>
     SQLBackend                      mysql
@@ -166,7 +166,7 @@ exit 0
 <VirtualHost {x.x.x.x}>
 SQLNamedQuery get-user-by-name FREEFORM "CALL wp_proftpd_get_ftp_user_by_username('%U','{ftp_type}')"
 </VirtualHost>
-```
+`
 16. sudo mv proftpd /etc/init.d/proftpd
 17. sudo chmod 755 /etc/init.d/proftpd
 18. sudo ln -s /etc/init.d/proftpd /etc/init.d/proftpd_start
