@@ -40,11 +40,11 @@ WP ProFTPd helps Authenticate ProFTPd users to FTP, SFTP, FTPS sites using the W
 
 1. Download the plugin and upload to you WordPress site.
 2. Install the plugin.
-3. Configure a user for FTP access.
-
+3. Configure a user for FTP access on the user profile page.
+   * Enabled = True
    * UID = 2001
    * GID = 2001
-   * Hom Directory = /srv/ftp/{username}
+   * Home Directory = /srv/ftp/{username}
    * Shell = /sbin/nologin
 
 ###ProFTPd
