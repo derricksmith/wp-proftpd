@@ -132,11 +132,46 @@ esac
 
 exit 0
 ```
-15. sudo mv proftpd /etc/init.d/proftpd
-16. sudo chmod 755 /etc/init.d/proftpd
-17. sudo ln -s /etc/init.d/proftpd /etc/init.d/proftpd_start
-18. sudo mv /etc/init.d/proftpd_start /etc/rc5.d
-19. sudo /etc/init.d/proftpd start OR sudo service proftpd start
+15. Edit file '/etc/proftpd/proftpd.conf' using your favorite editor (FTP Type can be "ftp","ftps","sftp" depending on the virtualhost configuration) 
+```
+<Global>
+<IfModule mod_sql.c>
+    SQLBackend                      mysql
+    SQLAuthTypes                    bcrypt
+    SQLPasswordEngine               on
+    SQLPasswordEncoding             base64
+    SQLPasswordRounds               8
+    SQLEngine                       on
+    AuthOrder                       mod_sql.c
+    SQLConnectInfo                  {wordpress database name}@localhost {wordpress database user} "{wordpress database password}"
+
+    SQLAuthenticate                 users
+    SQLGroupInfo                    wp_proftpd_groups groupname gid members
+
+    SQLUserInfo custom:/get-user-by-name
+
+    # set min UID and GID - otherwise these are 999 each
+    SQLMinID        500
+
+    # Update count every time user logs in
+    SQLLog PASS updatecount
+    SQLNamedQuery updatecount FREEFORM "CALL wp_proftpd_update_count('%U')"
+
+    SqlLogFile /var/log/proftpd/sql.log
+    SQLLog PASS,DELE,MKD,RETR,RMD,RNFR,RNTO,STOR,APPE extendedlog
+    SQLNamedQuery extendedlog FREEFORM "CALL wp_proftpd_insert_log('%a', '%U', '%r')"
+</IfModule>
+</Global>
+
+<VirtualHost {x.x.x.x}>
+SQLNamedQuery get-user-by-name FREEFORM "CALL wp_proftpd_get_ftp_user_by_username('%U','{ftp_type}')"
+</VirtualHost>
+```
+16. sudo mv proftpd /etc/init.d/proftpd
+17. sudo chmod 755 /etc/init.d/proftpd
+18. sudo ln -s /etc/init.d/proftpd /etc/init.d/proftpd_start
+19. sudo mv /etc/init.d/proftpd_start /etc/rc5.d
+20. sudo /etc/init.d/proftpd start OR sudo service proftpd start
 
 #### Log File Locations
 
