@@ -75,57 +75,57 @@ WP ProFTPd helps Authenticate ProFTPd users to FTP, SFTP, FTPS sites using the W
 	# If PIDFILE exists, does it point to a proftpd process?
 
 	if [ -f $PIDFILE ]; then
-	  pid=`cat $PIDFILE`
+		pid=`cat $PIDFILE`
 	fi
 
 	if [ ! -x $FTPD_BIN ]; then
-	  echo "$0: $FTPD_BIN: cannot execute"
-	  exit 1
+		echo "$0: $FTPD_BIN: cannot execute"
+		exit 1
 	fi
 
 	case $1 in
 
-	  start)
-		if [ -n "$pid" ]; then
-		  echo "$0: proftpd [PID $pid] already running"
-		  exit
-		fi
+		start)
+			if [ -n "$pid" ]; then
+				echo "$0: proftpd [PID $pid] already running"
+				exit
+			fi
 
-		if [ -r $FTPD_CONF ]; then
-		  echo "Starting proftpd..."
+			if [ -r $FTPD_CONF ]; then
+				echo "Starting proftpd..."
 
-		  $FTPD_BIN -c $FTPD_CONF
+				$FTPD_BIN -c $FTPD_CONF
 
-		else
-		  echo "$0: cannot start proftpd -- $FTPD_CONF missing"
-		fi
+			else
+				echo "$0: cannot start proftpd -- $FTPD_CONF missing"
+			fi
 		;;
 
-	  stop)
-		if [ -n "$pid" ]; then
-		  echo "Stopping proftpd..."
-		  kill -TERM $pid
+		stop)
+			if [ -n "$pid" ]; then
+				echo "Stopping proftpd..."
+				kill -TERM $pid
 
-		else
-		  echo "$0: proftpd not running"
-		  exit 1
-		fi
+			else
+				echo "$0: proftpd not running"
+				exit 1
+			fi
 		;;
 
-	  restart)
-		if [ -n "$pid" ]; then
-		  echo "Rehashing proftpd configuration"
-		  kill -TERM $pid
+		restart)
+			if [ -n "$pid" ]; then
+			echo "Rehashing proftpd configuration"
+			kill -TERM $pid
 
-		else
-		  echo "$0: proftpd not running"
-		  exit 1
-		fi
+			else
+				echo "$0: proftpd not running"
+				xit 1
+			fi
 		;;
 
-	  *)
-		echo "usage: $0 {start|stop|restart}"
-		exit 1
+		*)
+			echo "usage: $0 {start|stop|restart}"
+			exit 1
 		;;
 
 	esac
