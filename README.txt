@@ -64,109 +64,109 @@ WP ProFTPd helps Authenticate ProFTPd users to FTP, SFTP, FTPS sites using the W
 12. sudo mkdir -p /etc/proftpd/ssl
 13. sudo mkdir -p /var/log/proftpd
 14. Create file 'proftpd' using your favorite editor, copy script below
-`
-#!/bin/sh
 
-# ProFTPD files
-FTPD_BIN=/usr/sbin/proftpd
-FTPD_CONF=/etc/proftpd/proftpd.conf
-PIDFILE=/var/run/proftpd.pid
+	#!/bin/sh
 
-# If PIDFILE exists, does it point to a proftpd process?
+	# ProFTPD files
+	FTPD_BIN=/usr/sbin/proftpd
+	FTPD_CONF=/etc/proftpd/proftpd.conf
+	PIDFILE=/var/run/proftpd.pid
 
-if [ -f $PIDFILE ]; then
-  pid=`cat $PIDFILE`
-fi
+	# If PIDFILE exists, does it point to a proftpd process?
 
-if [ ! -x $FTPD_BIN ]; then
-  echo "$0: $FTPD_BIN: cannot execute"
-  exit 1
-fi
+	if [ -f $PIDFILE ]; then
+	  pid=`cat $PIDFILE`
+	fi
 
-case $1 in
+	if [ ! -x $FTPD_BIN ]; then
+	  echo "$0: $FTPD_BIN: cannot execute"
+	  exit 1
+	fi
 
-  start)
-    if [ -n "$pid" ]; then
-      echo "$0: proftpd [PID $pid] already running"
-      exit
-    fi
+	case $1 in
 
-    if [ -r $FTPD_CONF ]; then
-      echo "Starting proftpd..."
+	  start)
+		if [ -n "$pid" ]; then
+		  echo "$0: proftpd [PID $pid] already running"
+		  exit
+		fi
 
-      $FTPD_BIN -c $FTPD_CONF
+		if [ -r $FTPD_CONF ]; then
+		  echo "Starting proftpd..."
 
-    else
-      echo "$0: cannot start proftpd -- $FTPD_CONF missing"
-    fi
-    ;;
+		  $FTPD_BIN -c $FTPD_CONF
 
-  stop)
-    if [ -n "$pid" ]; then
-      echo "Stopping proftpd..."
-      kill -TERM $pid
+		else
+		  echo "$0: cannot start proftpd -- $FTPD_CONF missing"
+		fi
+		;;
 
-    else
-      echo "$0: proftpd not running"
-      exit 1
-    fi
-    ;;
+	  stop)
+		if [ -n "$pid" ]; then
+		  echo "Stopping proftpd..."
+		  kill -TERM $pid
 
-  restart)
-    if [ -n "$pid" ]; then
-      echo "Rehashing proftpd configuration"
-      kill -TERM $pid
+		else
+		  echo "$0: proftpd not running"
+		  exit 1
+		fi
+		;;
 
-    else
-      echo "$0: proftpd not running"
-      exit 1
-    fi
-    ;;
+	  restart)
+		if [ -n "$pid" ]; then
+		  echo "Rehashing proftpd configuration"
+		  kill -TERM $pid
 
-  *)
-    echo "usage: $0 {start|stop|restart}"
-    exit 1
-    ;;
+		else
+		  echo "$0: proftpd not running"
+		  exit 1
+		fi
+		;;
 
-esac
+	  *)
+		echo "usage: $0 {start|stop|restart}"
+		exit 1
+		;;
 
-exit 0
-`
+	esac
+
+	exit 0
+
 15. Edit file '/etc/proftpd/proftpd.conf' using your favorite editor (FTP Type can be "ftp","ftps","sftp" depending on the virtualhost configuration) 
-`
-<Global>
-<IfModule mod_sql.c>
-    SQLBackend                      mysql
-    SQLAuthTypes                    bcrypt
-    SQLPasswordEngine               on
-    SQLPasswordEncoding             base64
-    SQLPasswordRounds               8
-    SQLEngine                       on
-    AuthOrder                       mod_sql.c
-    SQLConnectInfo                  {wordpress database name}@localhost {wordpress database user} "{wordpress database password}"
 
-    SQLAuthenticate                 users
-    SQLGroupInfo                    wp_proftpd_groups groupname gid members
+	<Global>
+	<IfModule mod_sql.c>
+		SQLBackend                      mysql
+		SQLAuthTypes                    bcrypt
+		SQLPasswordEngine               on
+		SQLPasswordEncoding             base64
+		SQLPasswordRounds               8
+		SQLEngine                       on
+		AuthOrder                       mod_sql.c
+		SQLConnectInfo                  {wordpress database name}@localhost {wordpress database user} "{wordpress database password}"
 
-    SQLUserInfo custom:/get-user-by-name
+		SQLAuthenticate                 users
+		SQLGroupInfo                    wp_proftpd_groups groupname gid members
 
-    # set min UID and GID - otherwise these are 999 each
-    SQLMinID        500
+		SQLUserInfo custom:/get-user-by-name
 
-    # Update count every time user logs in
-    SQLLog PASS updatecount
-    SQLNamedQuery updatecount FREEFORM "CALL wp_proftpd_update_count('%U')"
+		# set min UID and GID - otherwise these are 999 each
+		SQLMinID        500
 
-    SqlLogFile /var/log/proftpd/sql.log
-    SQLLog PASS,DELE,MKD,RETR,RMD,RNFR,RNTO,STOR,APPE extendedlog
-    SQLNamedQuery extendedlog FREEFORM "CALL wp_proftpd_insert_log('%a', '%U', '%r')"
-</IfModule>
-</Global>
+		# Update count every time user logs in
+		SQLLog PASS updatecount
+		SQLNamedQuery updatecount FREEFORM "CALL wp_proftpd_update_count('%U')"
 
-<VirtualHost {x.x.x.x}>
-SQLNamedQuery get-user-by-name FREEFORM "CALL wp_proftpd_get_ftp_user_by_username('%U','{ftp_type}')"
-</VirtualHost>
-`
+		SqlLogFile /var/log/proftpd/sql.log
+		SQLLog PASS,DELE,MKD,RETR,RMD,RNFR,RNTO,STOR,APPE extendedlog
+		SQLNamedQuery extendedlog FREEFORM "CALL wp_proftpd_insert_log('%a', '%U', '%r')"
+	</IfModule>
+	</Global>
+
+	<VirtualHost {x.x.x.x}>
+	SQLNamedQuery get-user-by-name FREEFORM "CALL wp_proftpd_get_ftp_user_by_username('%U','{ftp_type}')"
+	</VirtualHost>
+
 16. sudo mv proftpd /etc/init.d/proftpd
 17. sudo chmod 755 /etc/init.d/proftpd
 18. sudo ln -s /etc/init.d/proftpd /etc/init.d/proftpd_start
