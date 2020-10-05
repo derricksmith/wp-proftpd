@@ -34,6 +34,7 @@ class Wp_Proftpd_Activator {
 		$wpdb->show_errors(); 
 		require_once( ABSPATH . '/wp-admin/includes/upgrade.php' );
 		$charset_collate = $wpdb->get_charset_collate();
+		$collate = (isset($wpdb->collate) && $wpdb->collate != '' ? "COLLATE ".$wpdb->collate : '');
 		
 		//Create SQL Log Table for ProFTPd
 		$sql  = "CREATE TABLE IF NOT EXISTS  " . $wpdb->prefix . "proftpd_logs (
@@ -42,17 +43,17 @@ class Wp_Proftpd_Activator {
 			username varchar(255) default NULL,
 			operation text default NULL,
 			PRIMARY KEY  (logdatetime)
-		)";
+		) $charset_collate;";
 		$results = $wpdb->query($sql);
 		Wp_Proftpd_Activator::get_last_error();
 		
 		//Create SQL Log Table for ProFTPd - Not used currently but must exist for ProFTPd
 		$sql  = "CREATE TABLE IF NOT EXISTS " . $wpdb->prefix . "proftpd_groups (
-			groupname varchar(255) COLLATE utf8_general_ci NOT NULL,
+			groupname varchar(255) NOT NULL,
 			gid smallint(6) NOT NULL DEFAULT '5500',
-			members varchar(16) COLLATE utf8_general_ci NOT NULL,
+			members varchar(16) NOT NULL,
 			PRIMARY KEY  (groupname)
-		)";
+		) $charset_collate;";
 		$results = $wpdb->query($sql);
 		Wp_Proftpd_Activator::get_last_error();
 		
@@ -71,6 +72,7 @@ class Wp_Proftpd_Activator {
 				IN type VARCHAR(5)
 			)
 			BEGIN
+				DROP TEMPORARY TABLE IF EXISTS tmp;
 				CREATE TEMPORARY TABLE tmp(
 					ID int(11) NOT NULL,
 					user_login varchar(60) default NULL,
@@ -101,16 +103,13 @@ class Wp_Proftpd_Activator {
 					
 				SELECT userid, passwd, uid, gid, homedir, shell
 				FROM tmp
-				WHERE userid = username COLLATE utf8mb4_unicode_520_ci 
+				WHERE userid = username 
 					AND enabled = 1 
 					AND CASE 
 						WHEN type = 'ftp' THEN ftp = 1
 						WHEN type = 'ftps' THEN ftps = 1
 						WHEN type = 'sftp' THEN sftp = 1
 						END;
-
-				DROP TEMPORARY TABLE IF EXISTS tmp;
-				
 			END
 		";
 		$results = $wpdb->query($sql);
@@ -136,7 +135,7 @@ class Wp_Proftpd_Activator {
 				
 				SELECT id INTO userid
 				FROM {$wpdb->prefix}users 
-				WHERE user_login = username COLLATE utf8mb4_unicode_520_ci;
+				WHERE user_login = username;
 				
 				SELECT CAST(meta_value as UNSIGNED) INTO usercount
 				FROM {$wpdb->prefix}usermeta
@@ -149,7 +148,7 @@ class Wp_Proftpd_Activator {
 				ELSE
 					UPDATE {$wpdb->prefix}usermeta
 					SET meta_value = usercount + 1 
-					WHERE meta_key = 'wp-proftpd-count' COLLATE utf8mb4_unicode_520_ci 
+					WHERE meta_key = 'wp-proftpd-count'
 					AND user_id = userid;
 				END IF;
 				
@@ -164,7 +163,7 @@ class Wp_Proftpd_Activator {
 				ELSE
 					UPDATE {$wpdb->prefix}usermeta
 					SET meta_value = NOW() 
-					WHERE meta_key = 'wp-proftpd-last-accessed' COLLATE utf8mb4_unicode_520_ci 
+					WHERE meta_key = 'wp-proftpd-last-accessed'
 					AND user_id = userid;
 				END IF;
 			END
