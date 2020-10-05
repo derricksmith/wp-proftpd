@@ -135,36 +135,36 @@ WP ProFTPd helps Authenticate ProFTPd users to FTP, SFTP, FTPS sites using the W
 15. Edit file '/etc/proftpd/proftpd.conf' using your favorite editor (FTP Type can be "ftp","ftps","sftp" depending on the virtualhost configuration) 
 
 	<Global>
-	<IfModule mod_sql.c>
-		SQLBackend                      mysql
-		SQLAuthTypes                    bcrypt
-		SQLPasswordEngine               on
-		SQLPasswordEncoding             base64
-		SQLPasswordRounds               8
-		SQLEngine                       on
-		AuthOrder                       mod_sql.c
-		SQLConnectInfo                  {wordpress database name}@localhost {wordpress database user} "{wordpress database password}"
+		<IfModule mod_sql.c>
+			SQLBackend                      mysql
+			SQLAuthTypes                    bcrypt
+			SQLPasswordEngine               on
+			SQLPasswordEncoding             base64
+			SQLPasswordRounds               8
+			SQLEngine                       on
+			AuthOrder                       mod_sql.c
+			SQLConnectInfo                  {wordpress database name}@localhost {wordpress database user} "{wordpress database password}"
 
-		SQLAuthenticate                 users
-		SQLGroupInfo                    wp_proftpd_groups groupname gid members
+			SQLAuthenticate                 users
+			SQLGroupInfo                    wp_proftpd_groups groupname gid members
 
-		SQLUserInfo custom:/get-user-by-name
+			SQLUserInfo custom:/get-user-by-name
 
-		# set min UID and GID - otherwise these are 999 each
-		SQLMinID        500
+			# set min UID and GID - otherwise these are 999 each
+			SQLMinID        500
 
-		# Update count every time user logs in
-		SQLLog PASS updatecount
-		SQLNamedQuery updatecount FREEFORM "CALL wp_proftpd_update_count('%U')"
+			# Update count every time user logs in
+			SQLLog PASS updatecount
+			SQLNamedQuery updatecount FREEFORM "CALL wp_proftpd_update_count('%U')"
 
-		SqlLogFile /var/log/proftpd/sql.log
-		SQLLog PASS,DELE,MKD,RETR,RMD,RNFR,RNTO,STOR,APPE extendedlog
-		SQLNamedQuery extendedlog FREEFORM "CALL wp_proftpd_insert_log('%a', '%U', '%r')"
-	</IfModule>
+			SqlLogFile /var/log/proftpd/sql.log
+			SQLLog PASS,DELE,MKD,RETR,RMD,RNFR,RNTO,STOR,APPE extendedlog
+			SQLNamedQuery extendedlog FREEFORM "CALL wp_proftpd_insert_log('%a', '%U', '%r')"
+		</IfModule>
 	</Global>
 
 	<VirtualHost {x.x.x.x}>
-	SQLNamedQuery get-user-by-name FREEFORM "CALL wp_proftpd_get_ftp_user_by_username('%U','{ftp_type}')"
+		SQLNamedQuery get-user-by-name FREEFORM "CALL wp_proftpd_get_ftp_user_by_username('%U','{ftp_type}')"
 	</VirtualHost>
 
 16. sudo mv proftpd /etc/init.d/proftpd
